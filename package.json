@@ -7,17 +7,25 @@
   "license": "MIT",
   "scripts": {
     "start": "node dist/main/api",
-    "build": "rimraf dist && tsc"
+    "build": "rimraf dist && tsc -p tsconfig-build.json",
+    "lint": "eslint .",
+    "lint:fix": "yarn run lint -- --fix"
   },
   "devDependencies": {
     "@types/module-alias": "^2.0.1",
     "@types/node": "^18.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.33.1",
+    "eslint": "^8.22.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.4",
+    "eslint-plugin-promise": "^6.0.0",
     "typescript": "^4.7.4"
   },
   "engines": {
     "node": "16.x"
   },
   "dependencies": {
+    "eslint-config-standard-with-typescript": "^22.0.0",
     "module-alias": "^2.2.2",
     "rimraf": "^3.0.2"
   }
