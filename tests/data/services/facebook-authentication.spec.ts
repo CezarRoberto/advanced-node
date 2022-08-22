@@ -1,5 +1,5 @@
 import { AuthenticationError } from "@/domain/erros";
-import { LoadUserAccountRepository } from "../contracts/repositories";
+import { CreateFacebookAccountRepository, LoadUserAccountRepository } from "../contracts/repositories";
 import { FacebookAuthenticationService } from "@/data/services";
 import { LoadFacebookUserApi } from "../contracts/apis";
 import { mock, MockProxy } from "jest-mock-extended";
@@ -7,12 +7,14 @@ import { mock, MockProxy } from "jest-mock-extended";
 describe("FacebookAuthenticationServices", () => {
     let loadFacebookUserApi: MockProxy<LoadFacebookUserApi>;
     let loadUserAccountRepo: MockProxy<LoadUserAccountRepository>;
+    let createFacebookAccountRepo: MockProxy<CreateFacebookAccountRepository>
     let sum: FacebookAuthenticationService;
     const token = "any_token";
 
     beforeEach(() => {
         loadFacebookUserApi = mock();
         loadUserAccountRepo = mock();
+        createFacebookAccountRepo = mock();
         loadFacebookUserApi.loadUser.mockResolvedValue({
             name: "any_fb_name",
             email: "any_fb_email",
@@ -20,7 +22,8 @@ describe("FacebookAuthenticationServices", () => {
         });
         sum = new FacebookAuthenticationService(
             loadFacebookUserApi,
-            loadUserAccountRepo
+            loadUserAccountRepo,
+            createFacebookAccountRepo
         );
     });
     it("should call loadFacebookUserApi with all params", async () => {
@@ -47,5 +50,19 @@ describe("FacebookAuthenticationServices", () => {
             email: "any_fb_email",
         });
         expect(loadUserAccountRepo.load).toHaveBeenCalledTimes(1);
+    });
+
+
+    it("should call CreateUserAccount when loadFacebookUserApi returns undefined", async () => {
+        loadUserAccountRepo.load.mockResolvedValueOnce(undefined)
+
+        await sum.perform({ token });
+
+        expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledWith({
+            email: "any_fb_email",
+            name: "any_fb_name",
+            facebookId: "any_fb_id",
+        });
+        expect(createFacebookAccountRepo.createFromFacebook).toHaveBeenCalledTimes(1);
     });
 });
