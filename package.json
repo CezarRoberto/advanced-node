@@ -12,8 +12,8 @@
     "lint:staged": "lint-staged",
     "lint:fix": "yarn run lint -- --fix",
     "test": "jest --passWithNoTests --no-cache --runInBand",
-    "test:watch": "yarn test -- --watch",
-    "test:coverage": "yarn test -- --coverage"
+    "test:watch": "yarn test --watch",
+    "test:coverage": "yarn test --coverage"
   },
   "devDependencies": {
     "@types/jest": "^28.1.7",
