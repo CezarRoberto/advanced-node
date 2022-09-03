@@ -6,6 +6,10 @@ import {
 import { FacebookAuthenticationService } from "@/data/services";
 import { LoadFacebookUserApi } from "../contracts/apis";
 import { mock, MockProxy } from "jest-mock-extended";
+import { createMock } from "ts-jest-mock";
+import { FacebookAccount } from "@/domain/models";
+
+jest.mock("@/domain/models/facebook-account");
 
 describe("FacebookAuthenticationServices", () => {
     let facebookApi: MockProxy<LoadFacebookUserApi>;
@@ -18,7 +22,7 @@ describe("FacebookAuthenticationServices", () => {
     beforeEach(() => {
         facebookApi = mock();
         userAccountRepo = mock();
-        userAccountRepo.load.mockResolvedValue(undefined)
+        userAccountRepo.load.mockResolvedValue(undefined);
         facebookApi.loadUser.mockResolvedValue({
             name: "any_fb_name",
             email: "any_fb_email",
@@ -37,7 +41,6 @@ describe("FacebookAuthenticationServices", () => {
     });
 
     it("should return AuthenticationError when loadFacebookUserApi returns undefined", async () => {
-
         const authResult = await sut.perform({ token });
 
         expect(authResult).toEqual(new AuthenticationError());
@@ -52,47 +55,17 @@ describe("FacebookAuthenticationServices", () => {
         expect(userAccountRepo.load).toHaveBeenCalledTimes(1);
     });
 
-    it("should create account with facebook data", async () => {
-
+    it("should call SaveFacebookAccountRepository with FacebookAccount", async () => {
+        const facebookAccountStub = jest
+            .fn()
+            .mockImplementation(() => ({ any: "any" }));
+        createMock(FacebookAccount).mockImplementation(
+            jest.fn().mockImplementation(facebookAccountStub)
+        );
         await sut.perform({ token });
 
         expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledWith({
-            email: "any_fb_email",
-            name: "any_fb_name",
-            facebookId: "any_fb_id",
-        });
-        expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
-    });
-
-    it("should not update account name", async () => {
-        userAccountRepo.load.mockResolvedValueOnce({
-            id: 'any_id',
-            name: 'any_name',
-        });
-
-        await sut.perform({ token });
-
-        expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledWith({
-            id: 'any_id',
-            email: "any_fb_email",
-            name: 'any_name',
-            facebookId: "any_fb_id",
-        });
-        expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
-    });
-
-    it("should update a account name", async () => {
-        userAccountRepo.load.mockResolvedValueOnce({
-            id: 'any_id'
-        });
-
-        await sut.perform({ token });
-
-        expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledWith({
-            id: 'any_id',
-            email: "any_fb_email",
-            name: 'any_fb_name',
-            facebookId: "any_fb_id",
+            any: "any",
         });
         expect(userAccountRepo.saveWithFacebook).toHaveBeenCalledTimes(1);
     });
