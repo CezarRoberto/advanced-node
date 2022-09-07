@@ -1,20 +1,7 @@
-import { TokenGenerator } from "@/data/contracts/crypto";
 import jwt from "jsonwebtoken";
+import { JwtTokenGenerator } from "@/infra/crypto";
 
 jest.mock("jsonwebtoken");
-
-class JwtTokenGenerator {
-    constructor(private readonly jwtSecret: string) {}
-
-    async generateToken(params: TokenGenerator.Params): Promise<TokenGenerator.Result> {
-        const expirationInSeconds = params.expirationInMs / 1000;
-        const token = jwt.sign({ key: params.key }, this.jwtSecret, {
-            expiresIn: expirationInSeconds,
-        });
-
-        return token
-    }
-}
 
 describe("JwtTokenGenerator", () => {
     let sut: JwtTokenGenerator;
@@ -32,7 +19,7 @@ describe("JwtTokenGenerator", () => {
     beforeEach(() => {
         fakeJwt = jwt as jest.Mocked<typeof jwt>;
         sut = new JwtTokenGenerator(jwtSecret);
-        fakeJwt.sign.mockImplementation(() => 'any_token')
+        fakeJwt.sign.mockImplementation(() => "any_token");
     });
 
     it("should call sign with correct params", async () => {
@@ -46,13 +33,15 @@ describe("JwtTokenGenerator", () => {
     it("should return a token", async () => {
         const token = await sut.generateToken({ key, expirationInMs });
 
-        expect(token).toBe('any_token')
+        expect(token).toBe("any_token");
     });
 
     it("should rethrow if sing throw", async () => {
-        fakeJwt.sign.mockImplementationOnce(() => {throw new Error('jwt_error')})
+        fakeJwt.sign.mockImplementationOnce(() => {
+            throw new Error("jwt_error");
+        });
         const promise = sut.generateToken({ key, expirationInMs });
 
-         expect(promise).rejects.toThrow(new Error('jwt_error'));
-     });
+        expect(promise).rejects.toThrow(new Error("jwt_error"));
+    });
 });
